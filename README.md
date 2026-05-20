@@ -23,7 +23,7 @@ Additional outputs in [`outputs/example_cone/`](outputs/example_cone/): density,
 ## Installation
 
 ```bash
-git clone https://github.com/JungmuHur/boundary-layer-generator.git
+git clone https://github.com/podobooks-ganghwa/boundary-layer-generator.git
 cd boundary-layer-generator
 python3 -m pip install -r requirements.txt
 ```
