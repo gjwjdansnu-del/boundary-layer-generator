@@ -1,5 +1,6 @@
+# Streamlit Cloud installs from repo-root requirements.txt
+streamlit>=1.28
 numpy>=1.24
 scipy>=1.10
 matplotlib>=3.7
-streamlit>=1.28
 pandas>=2.0

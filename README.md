@@ -38,11 +38,35 @@ python3 src/run_examples.py
 
 Writes plots and CSVs to `outputs/example_cone/`.
 
-## Run Streamlit UI
+## Run Streamlit UI (local)
 
 ```bash
+python3 -m pip install -r requirements.txt
 python3 -m streamlit run src/app.py
 ```
+
+## Deploy as a Streamlit app
+
+Host the interactive UI on [Streamlit Community Cloud](https://streamlit.io/cloud) (free tier).
+
+1. Go to [https://streamlit.io/cloud](https://streamlit.io/cloud) and sign in with GitHub.
+2. Click **Create app** → **Yup, I have an app**.
+3. Select repository: **`podobooks-ganghwa/boundary-layer-generator`**
+4. Branch: **`main`**
+5. Main file path: **`src/app.py`**
+6. (Optional) App URL slug: e.g. `boundary-layer-generator`
+7. Click **Deploy**
+
+Streamlit Cloud reads **`requirements.txt`** at the repository root and installs dependencies automatically. No extra backend or build step is required.
+
+| Setting | Value |
+|---------|--------|
+| Repository | `podobooks-ganghwa/boundary-layer-generator` |
+| Branch | `main` |
+| Main file path | `src/app.py` |
+| Python dependencies | `requirements.txt` (root) |
+
+After deploy, share the app URL (e.g. `https://boundary-layer-generator.streamlit.app`).
 
 ## Example condition (hypersonic cone)
 
@@ -120,9 +144,12 @@ C_f \approx \frac{2 f''(0)}{\sqrt{\mathrm{Re}_x}}
 boundary_layer_generator/
 ├── LICENSE
 ├── README.md
-├── requirements.txt
+├── requirements.txt         # Streamlit Cloud dependencies
+├── .streamlit/
+│   └── config.toml          # theme / headless defaults
 ├── outputs/example_cone/    # committed example artifacts
 └── src/
+    ├── app.py               # Streamlit entry point
     ├── app.py
     ├── run_examples.py
     └── boundary_layer/

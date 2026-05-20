@@ -6,6 +6,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Headless backend for Streamlit Cloud and local runs without a display
+import matplotlib
+
+matplotlib.use("Agg")
+
 import numpy as np
 import pandas as pd
 import streamlit as st
