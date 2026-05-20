@@ -27,6 +27,9 @@ Thumbs.db
 outputs/tmp/
 outputs/large/
 
+# Frontend (Vite / React)
+frontend/node_modules/
+
 # IDE
 .idea/
 .vscode/

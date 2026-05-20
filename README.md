@@ -10,7 +10,21 @@ Fast **similarity-profile** boundary-layer baseflow generator for 2D flat plates
 - **Geometries:** flat plate, wedge (local flat-plate patch), cone (Mangler \(x_\mathrm{eff}=x/3\))
 - **Physics (approximate):** Blasius shooting solver + compressible Blasius-like temperature coupling
 - **Outputs:** \(u\), \(T\), \(\rho\), \(\mu\), Mach profiles; \(\delta_{99}\), \(\delta^*\), \(\theta\), \(C_f\) vs \(x\)
-- **UI:** Streamlit app with profile plots, x-sweep plots, geometry envelope, optional x–y contours, CSV export
+- **Web UI (browser):** React + TypeScript app in `frontend/` — all physics runs locally in the browser ([GitHub Pages](#deploy-browser-app-github-pages))
+- **Python UI (reference):** Streamlit app in `src/app.py` — same approximate model
+
+## Browser app (recommended)
+
+**Live site:** [https://podobooks-ganghwa.github.io/boundary-layer-generator/](https://podobooks-ganghwa.github.io/boundary-layer-generator/)
+
+No backend, no install required. Calculations run entirely in your browser.
+
+```bash
+cd frontend
+npm install
+npm run dev      # local dev server
+npm run build    # production build → frontend/dist
+```
 
 ## Example plots
 
@@ -38,7 +52,21 @@ python3 src/run_examples.py
 
 Writes plots and CSVs to `outputs/example_cone/`.
 
-## Run Streamlit UI (local)
+## Deploy browser app (GitHub Pages)
+
+1. Push to `main` — the workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds `frontend/` and deploys to GitHub Pages.
+2. In the repo on GitHub: **Settings → Pages → Build and deployment → Source:** **GitHub Actions**.
+3. After the workflow completes, the app is at  
+   `https://podobooks-ganghwa.github.io/boundary-layer-generator/`
+
+| Setting | Value |
+|---------|--------|
+| Repository | `podobooks-ganghwa/boundary-layer-generator` |
+| Workflow | `Deploy frontend to GitHub Pages` |
+| Vite `base` | `/boundary-layer-generator/` |
+| Output | `frontend/dist` |
+
+## Run Streamlit UI (local, Python reference)
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -142,14 +170,11 @@ C_f \approx \frac{2 f''(0)}{\sqrt{\mathrm{Re}_x}}
 
 ```
 boundary_layer_generator/
-├── LICENSE
-├── README.md
-├── requirements.txt         # Streamlit Cloud dependencies
-├── .streamlit/
-│   └── config.toml          # theme / headless defaults
-├── outputs/example_cone/    # committed example artifacts
-└── src/
-    ├── app.py               # Streamlit entry point
+├── frontend/                # React + TypeScript (GitHub Pages)
+├── .github/workflows/deploy-pages.yml
+├── requirements.txt         # Python / Streamlit
+├── outputs/example_cone/
+└── src/                     # Python reference
     ├── app.py
     ├── run_examples.py
     └── boundary_layer/
