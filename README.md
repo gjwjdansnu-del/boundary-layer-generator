@@ -54,10 +54,11 @@ Writes plots and CSVs to `outputs/example_cone/`.
 
 ## Deploy browser app (GitHub Pages)
 
-1. Push to `main` — the workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds `frontend/` and deploys to GitHub Pages.
-2. In the repo on GitHub: **Settings → Pages → Build and deployment → Source:** **GitHub Actions**.
-3. After the workflow completes, the app is at  
-   `https://podobooks-ganghwa.github.io/boundary-layer-generator/`
+1. **Enable Pages once:** **Settings → Pages → Build and deployment → Source:** **GitHub Actions**.  
+   (If this step is skipped, the deploy workflow fails with `HttpError: Not Found` and the site shows GitHub’s generic 404.)
+2. Push to `main` — [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds `frontend/` and deploys.
+3. After the workflow succeeds, open  
+   **https://podobooks-ganghwa.github.io/boundary-layer-generator/**
 
 | Setting | Value |
 |---------|--------|
