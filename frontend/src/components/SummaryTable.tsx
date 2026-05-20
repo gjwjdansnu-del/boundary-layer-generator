@@ -1,11 +1,12 @@
-import type { EdgeConditions } from "../physics/edgeConditions";
+import type { EdgeConditions, ResolvedFreestream } from "../physics/edgeConditions";
 import { edgeToRows, freestreamShockToRows } from "../physics/edgeConditions";
-import type { FreestreamState, PostShockState } from "../physics/shockRelations";
+import type { PostShockState } from "../physics/shockRelations";
 
 interface Props {
   edge: EdgeConditions;
-  freestream?: FreestreamState;
+  resolved?: ResolvedFreestream;
   shock?: PostShockState;
+  shockNote?: string;
 }
 
 function Table({ title, rows }: { title: string; rows: { quantity: string; value: string }[] }) {
@@ -26,17 +27,20 @@ function Table({ title, rows }: { title: string; rows: { quantity: string; value
   );
 }
 
-export default function SummaryTable({ edge, freestream, shock }: Props) {
+export default function SummaryTable({ edge, resolved, shock, shockNote }: Props) {
   return (
     <div className="summary-wrap">
-      {freestream && shock && (
+      {resolved && shock && (
         <>
-          <Table title="프리스트림 & 충격파 → 엣지 (자동 계산)" rows={freestreamShockToRows(freestream, shock)} />
-          <p className="shock-note">{shock.note}</p>
+          <Table
+            title="프리스트림 & 충격파 → 엣지 (자동 계산)"
+            rows={freestreamShockToRows(resolved, shock)}
+          />
+          {shockNote && <p className="shock-note">{shockNote}</p>}
         </>
       )}
       <Table
-        title={freestream ? "경계층 엣지 조건 (충격 후, BL 계산에 사용)" : "엣지 조건"}
+        title={resolved ? "경계층 엣지 조건 (충격 후)" : "엣지 조건"}
         rows={edgeToRows(edge)}
       />
     </div>

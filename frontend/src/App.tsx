@@ -30,11 +30,20 @@ function buildEdge(inputs: AppInputs): BuildResult {
 
   if (inputs.flowLevel === "freestream") {
     const meta = fromFreestreamWithShock({
-      M_inf: inputs.M_inf,
-      p_inf: inputs.p_inf,
-      T_inf: inputs.T_inf,
+      inputMode: inputs.inputMode,
       T_w: inputs.T_w,
       deflectionDeg,
+      ...(inputs.inputMode === "mode_a"
+        ? {
+            M_inf: inputs.M_inf,
+            Re_unit: inputs.Re_unit,
+            ...(inputs.useH0 ? { h0: inputs.h0 } : { T0: inputs.T0 }),
+          }
+        : {
+            U_inf: inputs.U_inf,
+            p_inf: inputs.p_inf,
+            T_inf: inputs.T_inf,
+          }),
     });
     return { edge: meta.edge, freestreamMeta: meta };
   }
@@ -136,8 +145,9 @@ export default function App() {
               <h2>계산 결과 요약</h2>
               <SummaryTable
                 edge={result.edge}
-                freestream={result.freestreamMeta?.freestream}
+                resolved={result.freestreamMeta?.resolved}
                 shock={result.freestreamMeta?.shock}
+                shockNote={result.freestreamMeta?.shock.note}
               />
               <div className="metrics">
                 <div className="metric">

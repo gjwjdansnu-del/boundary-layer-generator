@@ -63,7 +63,7 @@ export default function StepWizard({ inputs, step, onStepChange, onChange }: Pro
   const setFlowLevel = (flowLevel: FlowLevel) => {
     onChange({
       flowLevel,
-      ...(flowLevel === "edge" ? { inputMode: "mode_b" as const } : {}),
+      inputMode: flowLevel === "freestream" ? ("mode_a" as const) : ("mode_b" as const),
     });
   };
 
@@ -128,13 +128,13 @@ export default function StepWizard({ inputs, step, onStepChange, onChange }: Pro
         {step === 3 &&
           choice(
             "3. 프리스트림 vs 엣지 — 무엇을 아시나요?",
-            "프리스트림: 충격파 앞 M∞, p∞, T∞. 엣지: 충격파 뒤 경계층 외연.",
+            "프리스트림: M∞+T₀+Re 또는 U∞+p∞+T∞. 엣지: U_e+p_e+T_e 직접.",
             inputs.flowLevel,
             [
               {
                 id: "freestream",
                 title: "프리스트림 (원류)",
-                desc: "M∞, p∞, T∞ → 앱이 충격파 후 엣지를 계산",
+                desc: "M∞+T₀+Re 또는 U∞+p∞+T∞ → 충격파 후 엣지 자동 계산",
               },
               {
                 id: "edge",
@@ -145,45 +145,68 @@ export default function StepWizard({ inputs, step, onStepChange, onChange }: Pro
             setFlowLevel
           )}
 
-        {step === 4 && inputs.flowLevel === "freestream" && (
-          <div>
-            <p className="step-lead">4. 충격파로 엣지 유동 자동 계산</p>
-            <p className="step-hint">
-              2단계 각도를 θ로, 5단계에서 M∞, p∞, T∞를 입력하면 사각(날개) 충격파 뒤 M_e, p_e,
-              T_e 를 구합니다.{" "}
-              <a
-                href="https://devenport.aoe.vt.edu/aoe3114/calc.html"
-                target="_blank"
-                rel="noreferrer"
-              >
-                VT 압축성 계산기
-              </a>
-              와 같은 이상기체 충격 관계입니다. Re는 충격 후 엣지에서 자동 산출됩니다.
-            </p>
-          </div>
-        )}
-
-        {step === 4 && inputs.flowLevel === "edge" &&
+        {step === 4 &&
           choice(
-            "4. 엣지 입력 형식",
-            "경계층 계산에 쓸 엣지(외연) 값입니다.",
+            inputs.flowLevel === "freestream" ? "4. 프리스트림 입력 형식" : "4. 엣지 입력 형식",
+            inputs.flowLevel === "freestream"
+              ? "원류(충격파 앞) 조합"
+              : "경계층 외연(충격파 뒤) 조합",
             inputs.inputMode,
             [
-              { id: "mode_b", title: "U + p + T", desc: "속도, 압력, 온도" },
-              { id: "mode_a", title: "M_e + T₀ + Re_unit", desc: "마하, 총온도, 레이놀즈" },
+              {
+                id: "mode_a",
+                title:
+                  inputs.flowLevel === "freestream"
+                    ? "M∞ + T₀ + Re_unit"
+                    : "M_e + T₀ + Re_unit",
+                desc: "마하, 총온도(또는 h₀), 단위 레이놀즈",
+              },
+              {
+                id: "mode_b",
+                title: inputs.flowLevel === "freestream" ? "U∞ + p∞ + T∞" : "U_e + p_e + T_e",
+                desc: "속도, 압력, 온도",
+              },
             ],
             (inputMode) => onChange({ inputMode })
           )}
 
         {step === 5 && inputs.flowLevel === "freestream" && (
           <div>
-            <p className="step-lead">5. 프리스트림 (원류) — M∞, p∞, T∞</p>
-            <p className="step-hint">충격파 앞 정적 상태만 입력하세요. 엣지 마하는 묻지 않습니다.</p>
-            {numField("M∞", "프리스트림 마하", inputs.M_inf, (M_inf) => onChange({ M_inf }), {
-              min: 1.01,
-            })}
-            {numField("p∞ [Pa]", "정압", inputs.p_inf, (p_inf) => onChange({ p_inf }))}
-            {numField("T∞ [K]", "정온", inputs.T_inf, (T_inf) => onChange({ T_inf }), { min: 1 })}
+            <p className="step-lead">5. 프리스트림 (원류) 수치</p>
+            <p className="step-hint">
+              → 정적 (M∞,p∞,T∞) 유도 → θ 충격파 → 엣지.{" "}
+              <a href="https://devenport.aoe.vt.edu/aoe3114/calc.html" target="_blank" rel="noreferrer">
+                VT 계산기
+              </a>{" "}
+              와 동일 충격식.
+            </p>
+            {inputs.inputMode === "mode_a" ? (
+              <>
+                {numField("M∞", "프리스트림 마하", inputs.M_inf, (M_inf) => onChange({ M_inf }), {
+                  min: 1.01,
+                })}
+                <label className="field checkbox-field">
+                  <input
+                    type="checkbox"
+                    checked={inputs.useH0}
+                    onChange={(e) => onChange({ useH0: e.target.checked })}
+                  />
+                  h₀ (T₀ 대신)
+                </label>
+                {inputs.useH0
+                  ? numField("h₀ [J/kg]", "", inputs.h0, (h0) => onChange({ h0 }))
+                  : numField("T₀ [K]", "총온도", inputs.T0, (T0) => onChange({ T0 }))}
+                {numField("Re_unit [1/m]", "프리스트림", inputs.Re_unit, (Re_unit) =>
+                  onChange({ Re_unit })
+                )}
+              </>
+            ) : (
+              <>
+                {numField("U∞ [m/s]", "", inputs.U_inf, (U_inf) => onChange({ U_inf }))}
+                {numField("p∞ [Pa]", "", inputs.p_inf, (p_inf) => onChange({ p_inf }))}
+                {numField("T∞ [K]", "", inputs.T_inf, (T_inf) => onChange({ T_inf }), { min: 1 })}
+              </>
+            )}
           </div>
         )}
 

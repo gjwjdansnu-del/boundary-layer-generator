@@ -13,8 +13,10 @@ export interface AppInputs {
   flowLevel: FlowLevel;
   /** Step 4–5: edge path only */
   inputMode: InputMode;
-  /** Freestream (step 5 when flowLevel === freestream) */
+  /** Freestream mode A: M∞, T₀/h₀, Re_unit */
   M_inf: number;
+  /** Freestream mode B: U∞, p∞, T∞ */
+  U_inf: number;
   p_inf: number;
   T_inf: number;
   /** Edge path — mode A */
@@ -44,9 +46,10 @@ export interface AppInputs {
 export const DEFAULT_INPUTS: AppInputs = {
   bodyType: "axisymmetric",
   halfAngleDeg: 7,
-  flowLevel: "edge",
-  inputMode: "mode_b",
+  flowLevel: "freestream",
+  inputMode: "mode_a",
   M_inf: 6.5,
+  U_inf: 1700,
   p_inf: 1200,
   T_inf: 220,
   M_e: 5.9,
