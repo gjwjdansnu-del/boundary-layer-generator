@@ -69,9 +69,15 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
 
   const xSelMm = xSel * 1e3;
 
+  const shockLabel =
+    shockAngleDeg != null && shockAngleDeg > 0
+      ? ` · β=${shockAngleDeg.toFixed(1)}°`
+      : "";
+
   const layout: Record<string, unknown> = {
+    datarevision: shockAngleDeg ?? 0,
     title: {
-      text: `${geometryLabel(geometry)} — 전체 (${OVERVIEW_LENGTH_MM} mm)`,
+      text: `${geometryLabel(geometry)} — 전체 (${OVERVIEW_LENGTH_MM} mm)${shockLabel}`,
       font: { size: 14 },
     },
     margin: { l: 55, r: 24, t: 48, b: 48 },
@@ -105,8 +111,11 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
     plot_bgcolor: "#fafbfc",
   };
 
+  const plotKey = `overview-${geometry.kind}-${geometry.coneHalfAngleDeg}-${shockAngleDeg ?? "none"}-${xSel}`;
+
   return (
     <Plot
+      key={plotKey}
       data={traces}
       layout={layout}
       config={{ responsive: true, displayModeBar: false }}

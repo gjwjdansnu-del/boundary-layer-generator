@@ -78,16 +78,32 @@ export function obliqueShock(
   }
 
   const mu = Math.asin(1 / M1);
-  const thetaMax = maxDeflection(M1, gamma);
-  if (thetaRad > thetaMax + 1e-6) {
+
+  // Weak shock branch: θ increases from μ to β_peak, then decreases
+  let betaPeak = mu + 1e-5;
+  let thetaPeak = 0;
+  const nScan = 300;
+  for (let i = 0; i <= nScan; i++) {
+    const beta = mu + (i / nScan) * (Math.PI / 2 - mu - 1e-4);
+    const t = deflectionFromBeta(M1, beta, gamma);
+    if (t >= thetaPeak - 1e-12) {
+      if (t > thetaPeak) {
+        thetaPeak = t;
+        betaPeak = beta;
+      }
+    } else {
+      break;
+    }
+  }
+
+  if (thetaRad > thetaPeak + 1e-6) {
     throw new Error(
-      `편향각 ${theta_deg.toFixed(2)}° 가 최대 가능각 ${(thetaMax / DEG).toFixed(2)}° 를 넘습니다 (충격파 분리).`
+      `편향각 ${theta_deg.toFixed(2)}° 가 최대 가능각 ${(thetaPeak / DEG).toFixed(2)}° 를 넘습니다 (충격파 분리).`
     );
   }
 
-  // Weak shock: smallest β > μ satisfying θ(β) = θ
   let lo = mu + 1e-5;
-  let hi = Math.PI / 2 - 1e-5;
+  let hi = betaPeak;
   let fLo = deflectionFromBeta(M1, lo, gamma) - thetaRad;
   let fHi = deflectionFromBeta(M1, hi, gamma) - thetaRad;
 
@@ -132,16 +148,4 @@ export function obliqueShock(
     note:
       "사각(날개) 충격파 근사 — 콘은 반각을 동일 θ 로 둔 1차 근사 (VT 압축성 계산기와 같은 Rankine–Hugoniot)",
   };
-}
-
-function maxDeflection(M1: number, gamma: number): number {
-  let tMax = 0;
-  const mu = Math.asin(1 / M1);
-  const n = 200;
-  for (let i = 0; i <= n; i++) {
-    const beta = mu + (i / n) * (Math.PI / 2 - mu - 1e-4);
-    const t = deflectionFromBeta(M1, beta, gamma);
-    if (t > tMax) tMax = t;
-  }
-  return tMax;
 }

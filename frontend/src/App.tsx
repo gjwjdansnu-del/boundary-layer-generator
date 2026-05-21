@@ -188,8 +188,13 @@ export default function App() {
             <section className="hero-plot">
               <h2>전체 모습 (500 mm)</h2>
               <p className="section-hint">
-                실제 스케일: 표면, 충격파, δ₉₉. 녹색 점선 = 선택 위치 x ={" "}
-                {(inputs.x_sel * 1e3).toFixed(0)} mm
+                실제 스케일: 표면, 충격파, δ₉₉. 녹색 점선 = x = {(inputs.x_sel * 1e3).toFixed(0)} mm
+                {result.freestreamMeta?.taylorMaccoll != null && (
+                  <> · 충격파 β = {result.freestreamMeta.taylorMaccoll.beta_deg.toFixed(2)}°</>
+                )}
+                {result.freestreamMeta?.shock != null && result.freestreamMeta.taylorMaccoll == null && (
+                  <> · 충격파 β = {result.freestreamMeta.shock.beta_deg.toFixed(2)}°</>
+                )}
               </p>
               <GeometryOverview
                 sweep={result.overviewSweep}
