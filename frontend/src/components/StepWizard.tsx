@@ -269,13 +269,14 @@ export default function StepWizard({ inputs, step, onStepChange, onChange }: Pro
 
         {step === 6 && (
           <div>
-            <p className="step-lead">6. 스트림 위치 x</p>
-            {numField("선택 x [m]", "", inputs.x_sel, (x_sel) => onChange({ x_sel }))}
+            <p className="step-lead">6. 스트림 범위</p>
             {numField("x min [m]", "", inputs.x_min, (x_min) => onChange({ x_min }))}
-            {numField("x max [m]", "CSV·δ 스윕용 (전체 그림은 500 mm 고정)", inputs.x_max, (x_max) =>
+            {numField("x max [m]", "CSV·δ 스윕 (x는 결과 리모컨에서 조절)", inputs.x_max, (x_max) =>
               onChange({ x_max })
             )}
-            <p className="step-hint">몸체 전체 그림 가로 길이는 항상 500 mm입니다.</p>
+            <p className="step-hint">
+              프로파일 위치 x는 결과 화면 왼쪽 리모컨에서 조절합니다. 전체 그림 가로 = 500 mm.
+            </p>
           </div>
         )}
       </div>

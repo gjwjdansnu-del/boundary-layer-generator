@@ -3,6 +3,7 @@ import CsvExport from "./components/CsvExport";
 import GeometryOverview from "./components/GeometryOverview";
 import ProfilePlots from "./components/ProfilePlots";
 import { OVERVIEW_LENGTH_M } from "./components/geometryPlotUtils";
+import ParamRemote from "./components/ParamRemote";
 import StepWizard from "./components/StepWizard";
 import SummaryTable from "./components/SummaryTable";
 import SweepPlots from "./components/SweepPlots";
@@ -147,7 +148,13 @@ export default function App() {
         result.sweep &&
         result.overviewSweep &&
         result.geometry && (
-          <main className="main results">
+          <div className="results-layout">
+            <ParamRemote
+              inputs={inputs}
+              onChange={patch}
+              error={result.error}
+            />
+            <main className="main results results-main">
             <section>
               <h2>계산 결과 요약</h2>
               <SummaryTable
@@ -217,7 +224,8 @@ export default function App() {
               <h2>CSV 저장</h2>
               <CsvExport prof={result.prof} sweep={result.sweep} />
             </section>
-          </main>
+            </main>
+          </div>
         )
       )}
 
