@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import CsvExport from "./components/CsvExport";
-import GeometryDetail from "./components/GeometryDetail";
 import GeometryOverview from "./components/GeometryOverview";
 import { OVERVIEW_LENGTH_M } from "./components/geometryPlotUtils";
 import StepWizard from "./components/StepWizard";
@@ -179,31 +178,13 @@ export default function App() {
             </section>
 
             <section className="hero-plot">
-              <h2>1. 전체 모습 (500 mm)</h2>
+              <h2>전체 모습 (500 mm)</h2>
               <p className="section-hint">
                 실제 스케일: 표면, 충격파, δ₉₉. 녹색 점선 = 선택 위치 x ={" "}
                 {(inputs.x_sel * 1e3).toFixed(0)} mm
               </p>
               <GeometryOverview
                 sweep={result.overviewSweep}
-                geometry={result.geometry}
-                xSel={inputs.x_sel}
-                shockAngleDeg={
-                  result.freestreamMeta?.taylorMaccoll?.beta_deg ??
-                  result.freestreamMeta?.shock?.beta_deg
-                }
-              />
-            </section>
-
-            <section className="hero-plot">
-              <h2>2. 선택 위치 확대 + 프로파일</h2>
-              <p className="section-hint">
-                표면 구간 확대. x = {(inputs.x_sel * 1e3).toFixed(0)} mm 에서 u/U_e, T/T_e, ρ/ρ_e,
-                Mach vs y (가로 = 정규화 값)
-              </p>
-              <GeometryDetail
-                sweep={result.overviewSweep}
-                prof={result.prof}
                 geometry={result.geometry}
                 xSel={inputs.x_sel}
                 shockAngleDeg={
