@@ -15,7 +15,7 @@ Fast **similarity-profile** boundary-layer baseflow generator for 2D flat plates
 
 ## Browser app (recommended)
 
-**Live site:** [https://podobooks-ganghwa.github.io/boundary-layer-generator/](https://podobooks-ganghwa.github.io/boundary-layer-generator/)
+**Live site:** [https://gjwjdansnu-del.github.io/boundary-layer-generator/](https://gjwjdansnu-del.github.io/boundary-layer-generator/)
 
 No backend, no install required. Calculations run entirely in your browser.
 
@@ -37,7 +37,7 @@ Additional outputs in [`outputs/example_cone/`](outputs/example_cone/): density,
 ## Installation
 
 ```bash
-git clone https://github.com/podobooks-ganghwa/boundary-layer-generator.git
+git clone https://github.com/gjwjdansnu-del/boundary-layer-generator.git
 cd boundary-layer-generator
 python3 -m pip install -r requirements.txt
 ```
@@ -58,11 +58,11 @@ Writes plots and CSVs to `outputs/example_cone/`.
    (If this step is skipped, the deploy workflow fails with `HttpError: Not Found` and the site shows GitHub’s generic 404.)
 2. Push to `main` — [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds `frontend/` and deploys.
 3. After the workflow succeeds, open  
-   **https://podobooks-ganghwa.github.io/boundary-layer-generator/**
+   **https://gjwjdansnu-del.github.io/boundary-layer-generator/**
 
 | Setting | Value |
 |---------|--------|
-| Repository | `podobooks-ganghwa/boundary-layer-generator` |
+| Repository | `gjwjdansnu-del/boundary-layer-generator` (학술용 — `podobooks-ganghwa` 아님) |
 | Workflow | `Deploy frontend to GitHub Pages` |
 | Vite `base` | `/boundary-layer-generator/` |
 | Output | `frontend/dist` |
@@ -80,7 +80,7 @@ Host the interactive UI on [Streamlit Community Cloud](https://streamlit.io/clou
 
 1. Go to [https://streamlit.io/cloud](https://streamlit.io/cloud) and sign in with GitHub.
 2. Click **Create app** → **Yup, I have an app**.
-3. Select repository: **`podobooks-ganghwa/boundary-layer-generator`**
+3. Select repository: **`gjwjdansnu-del/boundary-layer-generator`**
 4. Branch: **`main`**
 5. Main file path: **`src/app.py`**
 6. (Optional) App URL slug: e.g. `boundary-layer-generator`
@@ -90,7 +90,7 @@ Streamlit Cloud reads **`requirements.txt`** at the repository root and installs
 
 | Setting | Value |
 |---------|--------|
-| Repository | `podobooks-ganghwa/boundary-layer-generator` |
+| Repository | `gjwjdansnu-del/boundary-layer-generator` |
 | Branch | `main` |
 | Main file path | `src/app.py` |
 | Python dependencies | `requirements.txt` (root) |

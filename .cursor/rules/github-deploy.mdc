@@ -1,0 +1,11 @@
+---
+description: GitHub Pages deploy target for this project
+globs:
+  - "**/*"
+---
+
+# Deploy target
+
+- **Academic / boundary-layer-generator:** push and Pages URL use **`gjwjdansnu-del/boundary-layer-generator`**
+- Live site: `https://gjwjdansnu-del.github.io/boundary-layer-generator/`
+- **Do not** deploy to `podobooks-ganghwa` for this repo unless the user explicitly asks.
