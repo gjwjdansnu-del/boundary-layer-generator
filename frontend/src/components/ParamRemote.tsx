@@ -64,16 +64,16 @@ export default function ParamRemote({ inputs, onChange, error }: Props) {
     : machFromUT(inputs.U_e, inputs.T_e);
 
   return (
-    <aside className="param-remote" aria-label="파라미터 리모컨">
-      <h2 className="param-remote-title">리모컨</h2>
+    <aside className="param-remote" aria-label="Parameter remote">
+      <h2 className="param-remote-title">Parameters</h2>
       <p className="param-remote-hint">
-        {fs ? "프리스트림" : "엣지"} · {inputs.inputMode === "mode_a" ? "M+Re+h" : "u+p+T"}
+        {fs ? "Freestream" : "Edge"} · {inputs.inputMode === "mode_a" ? "M+Re+h" : "u+p+T"}
       </p>
       {error && <p className="param-remote-error">{error}</p>}
 
       {showAngle && (
         <SliderRow
-          label={inputs.bodyType === "axisymmetric" ? "콘 반각" : "웨지 각"}
+          label={inputs.bodyType === "axisymmetric" ? "Cone half-angle" : "Wedge angle"}
           value={inputs.halfAngleDeg}
           min={inputs.bodyType === "axisymmetric" ? 0.5 : 0}
           max={angleMax}
@@ -156,7 +156,7 @@ export default function ParamRemote({ inputs, onChange, error }: Props) {
             unit="K"
             onChange={(T) => onChange(patchModeBFromT(inputs, T, fs))}
           />
-          <p className="remote-derived">M (연동) = {modeB_M.toFixed(3)}</p>
+          <p className="remote-derived">M (coupled) = {modeB_M.toFixed(3)}</p>
         </>
       )}
 
@@ -171,7 +171,7 @@ export default function ParamRemote({ inputs, onChange, error }: Props) {
       />
 
       <SliderRow
-        label="x (프로파일)"
+        label="x (profile)"
         value={inputs.x_sel * 1e3}
         min={inputs.x_min * 1e3}
         max={inputs.x_max * 1e3}

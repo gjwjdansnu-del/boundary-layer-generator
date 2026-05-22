@@ -17,7 +17,7 @@ import {
 } from "./physics/edgeConditions";
 import { MANGLER_NOTE, type GeometryConfig } from "./physics/geometry";
 import { linspace, profileAtX, xSweep } from "./physics/profiles";
-import { DEFAULT_INPUTS, deriveGeometry, TOTAL_STEPS, type AppInputs } from "./types";
+import { DEFAULT_INPUTS, deriveGeometry, type AppInputs } from "./types";
 import { APP_VERSION } from "./version";
 
 type BuildResult = {
@@ -27,8 +27,7 @@ type BuildResult = {
 
 function buildEdge(inputs: AppInputs): BuildResult {
   const geom = deriveGeometry(inputs);
-  const deflectionDeg =
-    geom.kind === "flat_plate" ? 0 : inputs.halfAngleDeg;
+  const deflectionDeg = geom.kind === "flat_plate" ? 0 : inputs.halfAngleDeg;
 
   if (inputs.flowLevel === "freestream") {
     const meta = fromFreestreamWithShock({
@@ -75,7 +74,7 @@ function buildEdge(inputs: AppInputs): BuildResult {
 
 export default function App() {
   const [inputs, setInputs] = useState<AppInputs>(DEFAULT_INPUTS);
-  const [step, setStep] = useState(1);
+  const [showResults, setShowResults] = useState(false);
 
   const result = useMemo(() => {
     try {
@@ -123,119 +122,122 @@ export default function App() {
           <span className="app-version">{APP_VERSION}</span>
         </h1>
         <p className="subtitle">
-          브라우저에서 돌아가는 경계층 유사해 프로파일 생성기 (평판 · 웨지 · 콘)
+          Compressible boundary-layer similarity profiles (flat plate · wedge · cone)
         </p>
       </header>
-      <p className="notice info">모든 계산은 이 컴퓨터 브라우저 안에서만 실행됩니다.</p>
+      <p className="notice info">All calculations run locally in your browser.</p>
 
-      <StepWizard
-        inputs={inputs}
-        step={step}
-        onStepChange={setStep}
-        onChange={patch}
-      />
-
-      {step >= TOTAL_STEPS && (
-        <p className="notice warn subtle">{MODEL_LABEL}</p>
-      )}
-
-      {result.error ? (
-        <p className="error">{result.error}</p>
+      {!showResults ? (
+        <StepWizard
+          inputs={inputs}
+          onChange={patch}
+          onComplete={() => setShowResults(true)}
+          completeError={result.error}
+        />
       ) : (
-        step >= TOTAL_STEPS &&
-        result.edge &&
-        result.prof &&
-        result.sweep &&
-        result.overviewSweep &&
-        result.geometry && (
-          <div className="results-layout">
-            <ParamRemote
-              inputs={inputs}
-              onChange={patch}
-              error={result.error}
-            />
-            <main className="main results results-main">
-            <section>
-              <h2>계산 결과 요약</h2>
-              <SummaryTable
-                edge={result.edge}
-                resolved={result.freestreamMeta?.resolved}
-                shock={result.freestreamMeta?.shock}
-                taylorMaccoll={result.freestreamMeta?.taylorMaccoll}
-                freestreamIsEdge={result.freestreamMeta?.freestreamIsEdge}
-                shockNote={result.freestreamMeta?.shock?.note}
-                tmNote={result.freestreamMeta?.taylorMaccoll?.note}
-              />
-              <div className="metrics">
-                <div className="metric">
-                  <div className="label">δ₉₉ @ x</div>
-                  <div className="value">{(result.prof.delta_99 * 1e3).toFixed(3)} mm</div>
-                </div>
-                <div className="metric">
-                  <div className="label">Re_x</div>
-                  <div className="value">{result.prof.Re_x.toExponential(3)}</div>
-                </div>
-                <div className="metric">
-                  <div className="label">C_f (근사)</div>
-                  <div className="value">{result.prof.Cf.toExponential(4)}</div>
-                </div>
-              </div>
-              {result.geometry.kind === "cone" && (
-                <p className="notice warn">{MANGLER_NOTE}</p>
-              )}
-            </section>
-
-            <section className="hero-plot">
-              <h2>전체 모습 (500 mm)</h2>
-              <p className="section-hint">
-                실제 스케일: 표면, 충격파, δ₉₉. 녹색 점선 = x = {(inputs.x_sel * 1e3).toFixed(0)} mm
-                {result.freestreamMeta?.taylorMaccoll != null && (
-                  <> · 충격파 β = {result.freestreamMeta.taylorMaccoll.beta_deg.toFixed(2)}°</>
-                )}
-                {result.freestreamMeta?.shock != null && result.freestreamMeta.taylorMaccoll == null && (
-                  <> · 충격파 β = {result.freestreamMeta.shock.beta_deg.toFixed(2)}°</>
-                )}
-              </p>
-              <GeometryOverview
-                sweep={result.overviewSweep}
-                geometry={result.geometry}
-                xSel={inputs.x_sel}
-                shockAngleDeg={
-                  result.freestreamMeta?.taylorMaccoll?.beta_deg ??
-                  result.freestreamMeta?.shock?.beta_deg
-                }
-              />
-            </section>
-
-            <section>
-              <h2>프로파일 (x = {inputs.x_sel} m)</h2>
-              <ProfilePlots
-                prof={result.prof}
-                geometry={result.geometry}
-                yLogScale={inputs.yLogScale}
-              />
-            </section>
-
-            <section>
-              <h2>스트림 방향 δ, C_f</h2>
-              <SweepPlots
-                sweep={result.sweep}
-                geometry={result.geometry}
-                xSel={inputs.x_sel}
-              />
-            </section>
-
-            <section>
-              <h2>CSV 저장</h2>
-              <CsvExport prof={result.prof} sweep={result.sweep} />
-            </section>
-            </main>
+        <>
+          <div className="results-toolbar">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowResults(false)}
+            >
+              ← Edit inputs
+            </button>
+            <p className="notice warn subtle">{MODEL_LABEL}</p>
           </div>
-        )
-      )}
 
-      {step < TOTAL_STEPS && !result.error && (
-        <p className="hint-bottom">6단계까지 입력하면 아래에 그래프가 나타납니다.</p>
+          {result.error ? (
+            <p className="error">{result.error}</p>
+          ) : (
+            result.edge &&
+            result.prof &&
+            result.sweep &&
+            result.overviewSweep &&
+            result.geometry && (
+              <div className="results-layout">
+                <ParamRemote inputs={inputs} onChange={patch} error={result.error} />
+                <main className="main results results-main">
+                  <section>
+                    <h2>Summary</h2>
+                    <SummaryTable
+                      edge={result.edge}
+                      resolved={result.freestreamMeta?.resolved}
+                      shock={result.freestreamMeta?.shock}
+                      taylorMaccoll={result.freestreamMeta?.taylorMaccoll}
+                      freestreamIsEdge={result.freestreamMeta?.freestreamIsEdge}
+                      shockNote={result.freestreamMeta?.shock?.note}
+                      tmNote={result.freestreamMeta?.taylorMaccoll?.note}
+                    />
+                    <div className="metrics">
+                      <div className="metric">
+                        <div className="label">δ₉₉ @ x</div>
+                        <div className="value">{(result.prof.delta_99 * 1e3).toFixed(3)} mm</div>
+                      </div>
+                      <div className="metric">
+                        <div className="label">Re_x</div>
+                        <div className="value">{result.prof.Re_x.toExponential(3)}</div>
+                      </div>
+                      <div className="metric">
+                        <div className="label">C_f (approx.)</div>
+                        <div className="value">{result.prof.Cf.toExponential(4)}</div>
+                      </div>
+                    </div>
+                    {result.geometry.kind === "cone" && (
+                      <p className="notice warn">{MANGLER_NOTE}</p>
+                    )}
+                  </section>
+
+                  <section className="hero-plot">
+                    <h2>Overview (500 mm)</h2>
+                    <p className="section-hint">
+                      Surface, shock, δ₉₉. Green line: x = {(inputs.x_sel * 1e3).toFixed(0)} mm
+                      {result.freestreamMeta?.taylorMaccoll != null && (
+                        <> · β = {result.freestreamMeta.taylorMaccoll.beta_deg.toFixed(2)}°</>
+                      )}
+                      {result.freestreamMeta?.shock != null &&
+                        result.freestreamMeta.taylorMaccoll == null && (
+                          <> · β = {result.freestreamMeta.shock.beta_deg.toFixed(2)}°</>
+                        )}
+                    </p>
+                    <GeometryOverview
+                      sweep={result.overviewSweep}
+                      geometry={result.geometry}
+                      xSel={inputs.x_sel}
+                      shockAngleDeg={
+                        result.freestreamMeta?.taylorMaccoll?.beta_deg ??
+                        result.freestreamMeta?.shock?.beta_deg
+                      }
+                    />
+                  </section>
+
+                  <section>
+                    <h2>Profiles at x = {inputs.x_sel} m</h2>
+                    <ProfilePlots
+                      prof={result.prof}
+                      geometry={result.geometry}
+                      yLogScale={inputs.yLogScale}
+                    />
+                  </section>
+
+                  <section>
+                    <h2>Streamwise δ, C_f</h2>
+                    <SweepPlots
+                      sweep={result.sweep}
+                      geometry={result.geometry}
+                      xSel={inputs.x_sel}
+                    />
+                  </section>
+
+                  <section>
+                    <h2>Export CSV</h2>
+                    <CsvExport prof={result.prof} sweep={result.sweep} />
+                  </section>
+                </main>
+              </div>
+            )
+          )}
+        </>
       )}
     </div>
   );

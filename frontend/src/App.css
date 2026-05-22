@@ -80,6 +80,67 @@ header .subtitle {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.input-stack-heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+}
+
+.input-section {
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border);
+  animation: inputSectionIn 0.35s ease-out;
+}
+
+.input-section:first-of-type {
+  border-top: none;
+  padding-top: 0.5rem;
+}
+
+.input-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+@keyframes inputSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wizard-complete {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--accent);
+  text-align: center;
+}
+
+.btn-complete {
+  font-size: 1.05rem;
+  padding: 0.75rem 2rem;
+  min-width: 240px;
+}
+
+.results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.results-toolbar .notice {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
 .wizard-header {
   display: flex;
   flex-wrap: wrap;

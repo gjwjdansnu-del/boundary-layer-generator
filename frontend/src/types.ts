@@ -81,4 +81,3 @@ export function deriveGeometry(inputs: AppInputs): {
   return { kind: "wedge", coneHalfAngleDeg: inputs.halfAngleDeg };
 }
 
-export const TOTAL_STEPS = 6;

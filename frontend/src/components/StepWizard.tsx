@@ -1,16 +1,20 @@
+import { useEffect, useState, type ReactNode } from "react";
 import type { AppInputs, FlowLevel, InputMode } from "../types";
 import { deriveGeometry } from "../types";
-import { TOTAL_STEPS } from "../types";
 
-/** UI 단위 ↔ 내부 SI (Re: 1/m, h: J/kg) */
 const RE_PER_M_TO_E6 = 1e6;
 const H_JKG_TO_MJKG = 1e6;
 
 interface Props {
   inputs: AppInputs;
-  step: number;
-  onStepChange: (step: number) => void;
   onChange: (patch: Partial<AppInputs>) => void;
+  onComplete: () => void;
+  completeError?: string | null;
+}
+
+function isGeometryComplete(inputs: AppInputs): boolean {
+  if (inputs.bodyType === "axisymmetric") return inputs.halfAngleDeg > 0;
+  return inputs.halfAngleDeg >= 0;
 }
 
 function numField(
@@ -78,14 +82,14 @@ function ValueFields({
       <>
         {numField(
           fs ? "M∞" : "M_e",
-          "마하수",
+          "Mach number",
           fs ? inputs.M_inf : inputs.M_e,
           (v) => onChange(fs ? { M_inf: v } : { M_e: v }),
           { min: fs ? 1.01 : 0.01 }
         )}
         {numField(
           "Re [×10⁶/m]",
-          "단위 레이놀즈 수 (e6/m)",
+          "Unit Reynolds number",
           inputs.Re_unit / RE_PER_M_TO_E6,
           (reE6) => onChange({ Re_unit: reE6 * RE_PER_M_TO_E6 })
         )}
@@ -95,17 +99,17 @@ function ValueFields({
             checked={!inputs.useH0}
             onChange={(e) => onChange({ useH0: !e.target.checked })}
           />
-          T₀ [K] 사용 (체크 해제 시 h_tot)
+          Use T₀ [K] instead of h_tot
         </label>
         {inputs.useH0 ? (
           numField(
             "h_tot [MJ/kg]",
-            "총엔탈피",
+            "Total enthalpy",
             inputs.h0 / H_JKG_TO_MJKG,
             (hMj) => onChange({ h0: hMj * H_JKG_TO_MJKG })
           )
         ) : (
-          numField("T₀ [K]", "총온도", inputs.T0, (T0) => onChange({ T0 }))
+          numField("T₀ [K]", "Total temperature", inputs.T0, (T0) => onChange({ T0 }))
         )}
       </>
     );
@@ -115,19 +119,19 @@ function ValueFields({
     <>
       {numField(
         fs ? "U∞ [m/s]" : "U_e [m/s]",
-        "속도",
+        "Velocity",
         fs ? inputs.U_inf : inputs.U_e,
         (v) => onChange(fs ? { U_inf: v } : { U_e: v })
       )}
       {numField(
         fs ? "p∞ [Pa]" : "p_e [Pa]",
-        "압력",
+        "Pressure",
         fs ? inputs.p_inf : inputs.p_e,
         (v) => onChange(fs ? { p_inf: v } : { p_e: v })
       )}
       {numField(
         fs ? "T∞ [K]" : "T_e [K]",
-        "온도",
+        "Temperature",
         fs ? inputs.T_inf : inputs.T_e,
         (v) => onChange(fs ? { T_inf: v } : { T_e: v }),
         { min: 1 }
@@ -136,172 +140,189 @@ function ValueFields({
   );
 }
 
-export default function StepWizard({ inputs, step, onStepChange, onChange }: Props) {
-  const setFlowLevel = (flowLevel: FlowLevel) => onChange({ flowLevel });
+function InputSection({
+  n,
+  title,
+  children,
+}: {
+  n: number;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="input-section" aria-labelledby={`input-sec-${n}`}>
+      <h3 id={`input-sec-${n}`} className="input-section-title">
+        {n}. {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
 
-  const setInputMode = (inputMode: InputMode) => onChange({ inputMode });
+export default function StepWizard({
+  inputs,
+  onChange,
+  onComplete,
+  completeError,
+}: Props) {
+  const [unlocked, setUnlocked] = useState(1);
+  const geom = deriveGeometry(inputs);
+  const stateLabel = inputs.flowLevel === "freestream" ? "Freestream" : "Edge";
 
-  const canNext =
-    step < TOTAL_STEPS &&
-    (step !== 1 ||
-      (inputs.bodyType === "2d" && inputs.halfAngleDeg >= 0) ||
-      (inputs.bodyType === "axisymmetric" && inputs.halfAngleDeg > 0));
+  useEffect(() => {
+    if (isGeometryComplete(inputs)) {
+      setUnlocked((u) => Math.max(u, 2));
+    }
+  }, [inputs.bodyType, inputs.halfAngleDeg]);
 
-  const stateName = inputs.flowLevel === "freestream" ? "프리스트림" : "엣지";
+  const pickFlow = (flowLevel: FlowLevel) => {
+    onChange({ flowLevel });
+    setUnlocked((u) => Math.max(u, 3));
+  };
+
+  const pickMode = (inputMode: InputMode) => {
+    onChange({ inputMode });
+    setUnlocked((u) => Math.max(u, 4));
+  };
+
+  useEffect(() => {
+    if (unlocked >= 4) setUnlocked((u) => Math.max(u, 5));
+  }, [unlocked]);
+
+  useEffect(() => {
+    if (unlocked >= 5) setUnlocked((u) => Math.max(u, 6));
+  }, [unlocked]);
+
+  const freestreamFlowHint =
+    geom.kind === "flat_plate"
+      ? "Flat plate: freestream equals edge (no shock)."
+      : geom.kind === "cone"
+        ? "Cone: Taylor–Maccoll → edge."
+        : "Wedge: 2D oblique shock → edge.";
 
   return (
-    <div className="wizard">
-      <div className="wizard-header">
-        <h2>입력 단계</h2>
-        <div className="step-dots">
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`dot ${step === i + 1 ? "active" : ""} ${step > i + 1 ? "done" : ""}`}
-              onClick={() => onStepChange(i + 1)}
-              title={`${i + 1}단계`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="wizard input-stack">
+      <h2 className="input-stack-heading">Inputs</h2>
+      <p className="step-hint">
+        Complete each section from top to bottom. The next section appears as you go.
+      </p>
 
-      <div className="wizard-body">
-        {/* 1. 기하 */}
-        {step === 1 && (
-          <div>
-            {choice(
-              "1. 기하",
-              "평판(0°): 프리스트림=엣지 · 웨지: 2D oblique · 콘: Taylor–Maccoll",
-              inputs.bodyType,
-              [
-                { id: "2d", title: "2D (평판 / 웨지)", desc: "평판 또는 웨지" },
-                { id: "axisymmetric", title: "축대칭 (콘)", desc: "Mangler x_eff = x/3" },
-              ],
-              (bodyType) => onChange({ bodyType })
-            )}
-            {numField(
-              inputs.bodyType === "2d" ? "웨지 각도 [deg]" : "콘 반각 [deg]",
-              inputs.bodyType === "2d" ? "0° = 평판" : "예: 7",
-              inputs.halfAngleDeg,
-              (halfAngleDeg) => onChange({ halfAngleDeg }),
-              { min: 0, step: 0.1 }
-            )}
-          </div>
+      <InputSection n={1} title="Geometry">
+        {choice(
+          "Body",
+          "Flat plate (0°) · wedge: 2D oblique · cone: Taylor–Maccoll",
+          inputs.bodyType,
+          [
+            { id: "2d", title: "2D (plate / wedge)", desc: "Flat plate or wedge" },
+            { id: "axisymmetric", title: "Axisymmetric (cone)", desc: "Mangler x_eff = x/3" },
+          ],
+          (bodyType) => onChange({ bodyType })
         )}
+        {numField(
+          inputs.bodyType === "2d" ? "Wedge angle [deg]" : "Cone half-angle [deg]",
+          inputs.bodyType === "2d" ? "0° = flat plate" : "e.g. 7",
+          inputs.halfAngleDeg,
+          (halfAngleDeg) => onChange({ halfAngleDeg }),
+          { min: 0, step: 0.1 }
+        )}
+      </InputSection>
 
-        {/* 2. 어느 상태? */}
-        {step === 2 &&
-          choice(
-            "2. 어느 상태를 입력할 것인가?",
-            "프리스트림 = 충격파 앞 원류. 엣지 = 경계층 바로 바깥(충격파 뒤) 유동.",
+      {unlocked >= 2 && (
+        <InputSection n={2} title="Which state to specify?">
+          {choice(
+            "Flow level",
+            "Freestream = upstream of shock. Edge = outer boundary-layer state.",
             inputs.flowLevel,
             [
               {
                 id: "freestream",
-                title: "프리스트림 (freestream)",
-                desc:
-                  deriveGeometry(inputs).kind === "flat_plate"
-                    ? "평판: 프리스트림이 곧 엣지 조건"
-                    : deriveGeometry(inputs).kind === "cone"
-                      ? "콘: Taylor–Maccoll로 엣지 자동 계산"
-                      : "웨지: 2D oblique shock → 엣지 자동 계산",
+                title: "Freestream",
+                desc: freestreamFlowHint,
               },
               {
                 id: "edge",
-                title: "엣지 (edge)",
-                desc: "이미 알고 있는 경계층 외연 조건을 직접 입력",
+                title: "Edge",
+                desc: "Known edge conditions (skip shock / TM solve).",
               },
             ],
-            setFlowLevel
+            pickFlow
           )}
+        </InputSection>
+      )}
 
-        {/* 3. 어떻게 입력? */}
-        {step === 3 &&
-          choice(
-            "3. 그 상태를 어떻게 입력할 것인가?",
-            `${stateName} 조건을 아래 두 형식 중 하나로 넣습니다.`,
+      {unlocked >= 3 && (
+        <InputSection n={3} title="How to specify that state?">
+          {choice(
+            "Input format",
+            `${stateLabel} — choose one format.`,
             inputs.inputMode,
             [
               {
                 id: "mode_a",
                 title: "M + Re + h_tot",
-                desc: "마하수, Re [×10⁶/m], h_tot [MJ/kg] (또는 T₀ [K])",
+                desc: "Mach, Re [×10⁶/m], h_tot [MJ/kg] (or T₀)",
               },
               {
                 id: "mode_b",
                 title: "u + p + T",
-                desc: "속도, 압력, 온도 (정적)",
+                desc: "Velocity, pressure, temperature (static)",
               },
             ],
-            setInputMode
+            pickMode
           )}
+        </InputSection>
+      )}
 
-        {/* 4. 수치 */}
-        {step === 4 && (
-          <div>
-            <p className="step-lead">4. {stateName} 수치 입력</p>
-            {inputs.flowLevel === "freestream" && (
-              <p className="step-hint">
-                {deriveGeometry(inputs).kind === "flat_plate" &&
-                  "평판: 입력한 프리스트림이 그대로 경계층 엣지 조건입니다."}
-                {deriveGeometry(inputs).kind === "wedge" &&
-                  "웨지: 프리스트림 → 2D oblique shock (θ = 웨지각) → 엣지 → 경계층."}
-                {deriveGeometry(inputs).kind === "cone" &&
-                  "콘: 프리스트림 → Taylor–Maccoll (반각) → 엣지 → 경계층."}
-              </p>
-            )}
-            {inputs.flowLevel === "edge" && (
-              <p className="step-hint">입력한 값이 경계층 계산의 엣지 조건이 됩니다.</p>
-            )}
-            <ValueFields inputs={inputs} onChange={onChange} />
-          </div>
-        )}
+      {unlocked >= 4 && (
+        <InputSection n={4} title={`${stateLabel} values`}>
+          {inputs.flowLevel === "freestream" && (
+            <p className="step-hint">{freestreamFlowHint}</p>
+          )}
+          {inputs.flowLevel === "edge" && (
+            <p className="step-hint">Values are used directly as edge conditions.</p>
+          )}
+          <ValueFields inputs={inputs} onChange={onChange} />
+        </InputSection>
+      )}
 
-        {step === 5 && (
-          <div>
-            <p className="step-lead">5. 벽 온도 T_w</p>
-            {numField("T_w [K]", "등온 벽", inputs.T_w, (T_w) => onChange({ T_w }), { min: 1 })}
-          </div>
-        )}
+      {unlocked >= 5 && (
+        <InputSection n={5} title="Wall temperature">
+          {numField("T_w [K]", "Isothermal wall", inputs.T_w, (T_w) => onChange({ T_w }), {
+            min: 1,
+          })}
+        </InputSection>
+      )}
 
-        {step === 6 && (
-          <div>
-            <p className="step-lead">6. 스트림 범위</p>
-            {numField("x min [m]", "", inputs.x_min, (x_min) => onChange({ x_min }))}
-            {numField("x max [m]", "CSV·δ 스윕 (x는 결과 리모컨에서 조절)", inputs.x_max, (x_max) =>
-              onChange({ x_max })
-            )}
-            <p className="step-hint">
-              프로파일 위치 x는 결과 화면 왼쪽 리모컨에서 조절합니다. 전체 그림 가로 = 500 mm.
-            </p>
-          </div>
-        )}
-      </div>
+      {unlocked >= 6 && (
+        <InputSection n={6} title="Streamwise range">
+          {numField("x min [m]", "Sweep / CSV lower bound", inputs.x_min, (x_min) =>
+            onChange({ x_min })
+          )}
+          {numField(
+            "x max [m]",
+            "Sweep / CSV upper bound (overview plot fixed at 500 mm)",
+            inputs.x_max,
+            (x_max) => onChange({ x_max })
+          )}
+          <p className="step-hint">
+            Profile station x is adjusted on the results page (parameter remote).
+          </p>
+        </InputSection>
+      )}
 
-      <div className="wizard-nav">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          disabled={step <= 1}
-          onClick={() => onStepChange(step - 1)}
-        >
-          ← 이전
-        </button>
-        <span className="step-counter">
-          {step} / {TOTAL_STEPS}
-        </span>
-        <button
-          type="button"
-          className="btn"
-          disabled={!canNext}
-          onClick={() => onStepChange(Math.min(TOTAL_STEPS, step + 1))}
-        >
-          {step >= TOTAL_STEPS ? "완료" : "다음 →"}
-        </button>
-      </div>
+      {unlocked >= 6 && (
+        <div className="wizard-complete">
+          {completeError && <p className="error">{completeError}</p>}
+          <button
+            type="button"
+            className="btn btn-complete"
+            disabled={!isGeometryComplete(inputs)}
+            onClick={onComplete}
+          >
+            Complete — show results
+          </button>
+        </div>
+      )}
     </div>
   );
 }

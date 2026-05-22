@@ -34,7 +34,7 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
       x: xMm,
       y: xMm.map(() => 0),
       mode: "lines",
-      name: "중심선",
+      name: "Centerline",
       line: { color: "#999", dash: "dot", width: 1 },
     });
   }
@@ -43,7 +43,7 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
     x: xMm,
     y: ySurfMm,
     mode: "lines",
-    name: "표면",
+    name: "Surface",
     line: { color: "#1a1a1a", width: 3 },
   });
 
@@ -52,7 +52,7 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
       x: xMm,
       y: x.map((xi) => shockYMm(xi, shockAngleDeg)),
       mode: "lines",
-      name: `충격파 (${shockAngleDeg.toFixed(1)}°)`,
+      name: `Shock (${shockAngleDeg.toFixed(1)}°)`,
       line: { color: "#e67e22", dash: "dashdot", width: 2 },
     });
   }
@@ -77,7 +77,7 @@ export default function GeometryOverview({ sweep, geometry, xSel, shockAngleDeg 
   const layout: Record<string, unknown> = {
     datarevision: shockAngleDeg ?? 0,
     title: {
-      text: `${geometryLabel(geometry)} — 전체 (${OVERVIEW_LENGTH_MM} mm)${shockLabel}`,
+      text: `${geometryLabel(geometry)} — overview (${OVERVIEW_LENGTH_MM} mm)${shockLabel}`,
       font: { size: 14 },
     },
     margin: { l: 55, r: 24, t: 48, b: 48 },

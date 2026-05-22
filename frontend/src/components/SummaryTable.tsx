@@ -48,12 +48,12 @@ export default function SummaryTable({
   return (
     <div className="summary-wrap">
       {resolved && freestreamIsEdge && (
-        <Table title="평판: 프리스트림 = 엣지" rows={freestreamDirectToRows(resolved)} />
+        <Table title="Flat plate: freestream = edge" rows={freestreamDirectToRows(resolved)} />
       )}
       {resolved && taylorMaccoll && (
         <>
           <Table
-            title="프리스트림 → Taylor–Maccoll 콘 엣지"
+            title="Freestream → Taylor–Maccoll cone edge"
             rows={taylorMaccollToRows(resolved, taylorMaccoll)}
           />
           {tmNote && <p className="shock-note">{tmNote}</p>}
@@ -62,14 +62,14 @@ export default function SummaryTable({
       {resolved && shock && !taylorMaccoll && (
         <>
           <Table
-            title="프리스트림 & 충격파 → 엣지 (자동 계산)"
+            title="Freestream & shock → edge"
             rows={freestreamShockToRows(resolved, shock)}
           />
           {shockNote && <p className="shock-note">{shockNote}</p>}
         </>
       )}
       <Table
-        title={resolved ? "경계층 엣지 조건 (충격 후)" : "엣지 조건"}
+        title={resolved ? "Boundary-layer edge (post-shock)" : "Edge conditions"}
         rows={edgeToRows(edge)}
       />
     </div>

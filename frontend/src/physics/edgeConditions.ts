@@ -276,7 +276,7 @@ export function fromModeB(params: {
 
 export function edgeToRows(edge: EdgeConditions): { quantity: string; value: string }[] {
   return [
-    { quantity: "M_e (엣지)", value: edge.M_e.toPrecision(5) },
+    { quantity: "M_e (edge)", value: edge.M_e.toPrecision(5) },
     { quantity: "U_e [m/s]", value: edge.U_e.toPrecision(5) },
     { quantity: "T_e [K]", value: edge.T_e.toPrecision(5) },
     { quantity: "p_e [Pa]", value: edge.p_e.toPrecision(5) },
@@ -292,13 +292,13 @@ export function freestreamDirectToRows(
   resolved: ResolvedFreestream
 ): { quantity: string; value: string }[] {
   return [
-    { quantity: "입력 형식", value: resolved.inputLabel },
+    { quantity: "Input format", value: resolved.inputLabel },
     { quantity: "M∞ = M_e", value: resolved.M_inf.toPrecision(5) },
     { quantity: "p∞ = p_e [Pa]", value: resolved.p_inf.toPrecision(5) },
     { quantity: "T∞ = T_e [K]", value: resolved.T_inf.toPrecision(5) },
     { quantity: "U∞ = U_e [m/s]", value: resolved.U_inf.toPrecision(5) },
     { quantity: "Re_unit,∞ [1/m]", value: resolved.Re_unit_fs.toExponential(4) },
-    { quantity: "비고", value: "평판 — 충격파 없음, 프리스트림 = 엣지" },
+    { quantity: "Note", value: "Flat plate — no shock, freestream = edge" },
   ];
 }
 
@@ -307,13 +307,13 @@ export function taylorMaccollToRows(
   tm: TaylorMaccollResult
 ): { quantity: string; value: string }[] {
   return [
-    { quantity: "입력 형식", value: resolved.inputLabel },
+    { quantity: "Input format", value: resolved.inputLabel },
     { quantity: "M∞", value: resolved.M_inf.toPrecision(5) },
     { quantity: "p∞ [Pa]", value: resolved.p_inf.toPrecision(5) },
     { quantity: "T∞ [K]", value: resolved.T_inf.toPrecision(5) },
     { quantity: "β [deg] (TM)", value: tm.beta_deg.toFixed(2) },
     { quantity: "δ [deg]", value: tm.delta_deg.toFixed(2) },
-    { quantity: "M₂ (직후)", value: tm.M2.toPrecision(5) },
+    { quantity: "M₂ (post-shock)", value: tm.M2.toPrecision(5) },
     { quantity: "→ M_e", value: tm.M_e.toPrecision(5) },
     { quantity: "p_e/p∞", value: tm.p_e_over_p_inf.toPrecision(5) },
     { quantity: "T_e/T∞", value: tm.T_e_over_T_inf.toPrecision(5) },
@@ -326,11 +326,11 @@ export function freestreamShockToRows(
   shock: PostShockState
 ): { quantity: string; value: string }[] {
   return [
-    { quantity: "입력 형식", value: resolved.inputLabel },
+    { quantity: "Input format", value: resolved.inputLabel },
     { quantity: "M∞", value: resolved.M_inf.toPrecision(5) },
     { quantity: "U∞ [m/s]", value: resolved.U_inf.toPrecision(5) },
-    { quantity: "p∞ [Pa] (유도/입력)", value: resolved.p_inf.toPrecision(5) },
-    { quantity: "T∞ [K] (유도/입력)", value: resolved.T_inf.toPrecision(5) },
+    { quantity: "p∞ [Pa] (derived/input)", value: resolved.p_inf.toPrecision(5) },
+    { quantity: "T∞ [K] (derived/input)", value: resolved.T_inf.toPrecision(5) },
     { quantity: "Re_unit,∞ [1/m]", value: resolved.Re_unit_fs.toExponential(4) },
     { quantity: "θ [deg]", value: shock.theta_deg.toFixed(2) },
     { quantity: "β [deg]", value: shock.beta_deg.toFixed(2) },
