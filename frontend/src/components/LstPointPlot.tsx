@@ -13,6 +13,15 @@ type Props = {
 const W = 640;
 const H = 420;
 const PAD = { l: 56, r: 24, t: 24, b: 48 };
+const F_TICK_STEP_KHZ = 100;
+
+function fAxisTicks(): number[] {
+  const ticks: number[] = [];
+  for (let f = F_MIN_KHZ; f <= F_MAX_KHZ + 1e-9; f += F_TICK_STEP_KHZ) {
+    ticks.push(f);
+  }
+  return ticks;
+}
 
 function plotRect() {
   return {
@@ -81,7 +90,7 @@ export default function LstPointPlot({ xMinMm, xMaxMm, points, results, onAddPoi
 
   const { x0, y0, w, h } = plotRect();
   const xTicks = 5;
-  const yTicks = 6;
+  const fTicks = fAxisTicks();
 
   return (
     <div className="lst-point-plot">
@@ -114,11 +123,10 @@ export default function LstPointPlot({ xMinMm, xMaxMm, points, results, onAddPoi
             </g>
           );
         })}
-        {Array.from({ length: yTicks + 1 }, (_, i) => {
-          const fKhz = F_MIN_KHZ + (i / yTicks) * (F_MAX_KHZ - F_MIN_KHZ);
+        {fTicks.map((fKhz) => {
           const { sy } = dataToSvg(xMinMm, fKhz, xMinMm, xMaxMm);
           return (
-            <g key={`gy-${i}`}>
+            <g key={`gy-${fKhz}`}>
               <line x1={x0} y1={sy} x2={x0 + w} y2={sy} stroke="#e8ecf1" />
               <text x={x0 - 8} y={sy + 4} textAnchor="end" fontSize={11} fill="#5c6578">
                 {fKhz.toFixed(0)}
