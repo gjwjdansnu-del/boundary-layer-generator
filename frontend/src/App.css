@@ -625,3 +625,144 @@ table.summary th {
   background: #fdecea;
   border-radius: 8px;
 }
+
+/* --- LST point analysis --- */
+.lst-entry-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border);
+}
+
+.lst-entry-section h2 {
+  margin-top: 0;
+}
+
+.lst-page .lst-assumptions {
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.lst-summary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.lst-summary-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.lst-summary-dl dt {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lst-summary-dl dd {
+  margin: 0;
+}
+
+.lst-plot-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.lst-point-list {
+  margin: 0.75rem 0;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.lst-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.lst-engine-status {
+  margin-top: 0.5rem;
+}
+
+.lst-results-wrap {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.lst-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.lst-results-table th,
+.lst-results-table td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: right;
+}
+
+.lst-results-table th {
+  background: #eef2f7;
+  text-align: center;
+}
+
+.lst-row-unstable td:nth-child(5) {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.lst-row-stable td:nth-child(5) {
+  color: #27ae60;
+}
+
+.lst-status {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.lst-status-placeholder {
+  color: #d35400;
+}
+
+.lst-status-ok {
+  color: #27ae60;
+}
+
+.lst-status-error {
+  color: #c0392b;
+}
+
+.lst-messages {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

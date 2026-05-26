@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import CsvExport from "./components/CsvExport";
+import LinearStabilitySection from "./components/LinearStabilitySection";
 import GeometryOverview from "./components/GeometryOverview";
 import ProfilePlots from "./components/ProfilePlots";
 import { OVERVIEW_LENGTH_M } from "./components/geometryPlotUtils";
@@ -17,8 +18,13 @@ import {
 } from "./physics/edgeConditions";
 import { MANGLER_NOTE, type GeometryConfig } from "./physics/geometry";
 import { linspace, profileAtX, xSweep } from "./physics/profiles";
+import { buildLstFlowSummary } from "./lst/session";
+import type { LstSession } from "./lst/types";
+import LstPage from "./pages/LstPage";
 import { DEFAULT_INPUTS, deriveGeometry, type AppInputs } from "./types";
 import { APP_VERSION } from "./version";
+
+type AppView = "generator" | "lst";
 
 type BuildResult = {
   edge: ReturnType<typeof fromModeB>;
@@ -72,9 +78,24 @@ function buildEdge(inputs: AppInputs): BuildResult {
   };
 }
 
+function edgeSourceLabel(
+  inputs: AppInputs,
+  meta: BuildResult["freestreamMeta"]
+): string {
+  if (inputs.flowLevel === "edge") {
+    return inputs.inputMode === "mode_a" ? "Specified edge (M, Re, T)" : "Specified edge (u, p, T)";
+  }
+  if (meta?.freestreamIsEdge) return "Freestream = edge (no shock)";
+  if (meta?.taylorMaccoll) return "Taylor–Maccoll cone edge";
+  if (meta?.shock) return "Oblique shock edge";
+  return "Freestream-derived edge";
+}
+
 export default function App() {
   const [inputs, setInputs] = useState<AppInputs>(DEFAULT_INPUTS);
   const [showResults, setShowResults] = useState(false);
+  const [view, setView] = useState<AppView>("generator");
+  const [lstSession, setLstSession] = useState<LstSession | null>(null);
 
   const result = useMemo(() => {
     try {
@@ -113,6 +134,32 @@ export default function App() {
   }, [inputs]);
 
   const patch = (p: Partial<AppInputs>) => setInputs((prev) => ({ ...prev, ...p }));
+
+  const openLst = () => {
+    if (!result.edge || !result.geometry) return;
+    setLstSession({
+      inputs,
+      summary: buildLstFlowSummary(
+        inputs,
+        result.edge,
+        edgeSourceLabel(inputs, result.freestreamMeta)
+      ),
+      edge: result.edge,
+      geometry: result.geometry,
+    });
+    setView("lst");
+  };
+
+  if (view === "lst" && lstSession) {
+    return (
+      <LstPage
+        session={lstSession}
+        onBack={() => {
+          setView("generator");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="app">
@@ -233,6 +280,8 @@ export default function App() {
                     <h2>Export CSV</h2>
                     <CsvExport prof={result.prof} sweep={result.sweep} />
                   </section>
+
+                  <LinearStabilitySection onRunLst={openLst} />
                 </main>
               </div>
             )
