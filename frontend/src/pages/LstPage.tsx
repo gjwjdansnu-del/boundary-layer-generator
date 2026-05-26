@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import LstPointPlot from "../components/LstPointPlot";
 import LstResultsTable from "../components/LstResultsTable";
 import { extractBaseflowAtX, solverOptionsFromEdge } from "../lst/baseflowExport";
@@ -62,10 +62,6 @@ export default function LstPage({ session, onBack }: Props) {
       setEngineReady(false);
     }
   }, []);
-
-  useEffect(() => {
-    void loadEngine();
-  }, [loadEngine]);
 
   const addPoint = (x_m: number, f_khz: number) => {
     setPoints((prev) => [
@@ -184,8 +180,8 @@ export default function LstPage({ session, onBack }: Props) {
       <section className="lst-plot-section">
         <h2>Select analysis points</h2>
         <p className="section-hint">
-          Click anywhere inside the plot area to add a point (not only on existing markers).
-          Multiple points allowed.
+          Click inside the gray plot area to add a point. Multiple points allowed. Pyodide loads
+          only when you run LST (not on page open).
         </p>
         <LstPointPlot
           xMinMm={xMinMm}

@@ -677,6 +677,19 @@ table.summary th {
   margin-bottom: 1.25rem;
 }
 
+.lst-point-plot {
+  width: 100%;
+  max-width: 720px;
+}
+
+.lst-point-plot-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  user-select: none;
+}
+
 .lst-point-list {
   margin: 0.75rem 0;
   padding-left: 1.25rem;
