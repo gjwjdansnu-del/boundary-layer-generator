@@ -183,7 +183,10 @@ export default function LstPage({ session, onBack }: Props) {
 
       <section className="lst-plot-section">
         <h2>Select analysis points</h2>
-        <p className="section-hint">Click on the plane to add a point. Multiple points allowed.</p>
+        <p className="section-hint">
+          Click anywhere inside the plot area to add a point (not only on existing markers).
+          Multiple points allowed.
+        </p>
         <LstPointPlot
           xMinMm={xMinMm}
           xMaxMm={xMaxMm}

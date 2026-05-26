@@ -1,4 +1,6 @@
+import { useCallback, useMemo } from "react";
 import Plot from "react-plotly.js";
+import type { PlotMouseEvent } from "plotly.js";
 import type { LstPointResult, LstSelectedPoint } from "../lst/types";
 import { F_MAX_KHZ, F_MIN_KHZ } from "../lst/types";
 
@@ -19,28 +21,60 @@ export default function LstPointPlot({ xMinMm, xMaxMm, points, results, onAddPoi
 
   const hasGrowth = markerColors.some((c) => c > 0);
 
+  /** Invisible heatmap so clicks anywhere in the x–f box register (empty scatter has no hit targets). */
+  const clickSurface = useMemo(
+    () => ({
+      type: "heatmap" as const,
+      name: "_click_surface",
+      x: [xMinMm, xMaxMm],
+      y: [F_MIN_KHZ, F_MAX_KHZ],
+      z: [
+        [0, 0],
+        [0, 0],
+      ],
+      opacity: 0.01,
+      hoverinfo: "skip" as const,
+      showscale: false,
+      zsmooth: false as const,
+    }),
+    [xMinMm, xMaxMm]
+  );
+
+  const selectedTrace = useMemo(
+    () => ({
+      type: "scatter" as const,
+      mode: "markers" as const,
+      x: points.map((p) => p.x_m * 1e3),
+      y: points.map((p) => p.f_khz),
+      marker: {
+        size: 12,
+        color: markerColors,
+        colorscale: "RdYlBu_r",
+        cmin: hasGrowth ? 0 : -1,
+        cmax: hasGrowth ? Math.max(...markerColors, 1) : 1,
+        colorbar: hasGrowth ? { title: { text: "−αᵢ [1/m]" } } : undefined,
+        line: { color: "#1a1f2e", width: 1 },
+      },
+      name: "Selected",
+      hovertemplate: "x=%{x:.1f} mm<br>f=%{y:.1f} kHz<extra></extra>",
+    }),
+    [points, markerColors, hasGrowth]
+  );
+
+  const handleClick = useCallback(
+    (ev: Readonly<PlotMouseEvent>) => {
+      const pt = ev.points?.[0];
+      if (!pt || typeof pt.x !== "number" || typeof pt.y !== "number") return;
+      const x_mm = Math.min(xMaxMm, Math.max(xMinMm, pt.x));
+      const f_khz = Math.min(F_MAX_KHZ, Math.max(F_MIN_KHZ, pt.y));
+      onAddPoint(x_mm / 1e3, f_khz);
+    },
+    [xMinMm, xMaxMm, onAddPoint]
+  );
+
   return (
     <Plot
-      data={[
-        {
-          type: "scatter",
-          mode: "markers",
-          x: points.map((p) => p.x_m * 1e3),
-          y: points.map((p) => p.f_khz),
-          marker: {
-            size: 12,
-            color: markerColors,
-            colorscale: "RdYlBu_r",
-            cmin: hasGrowth ? 0 : -1,
-            cmax: hasGrowth ? Math.max(...markerColors, 1) : 1,
-            colorbar: hasGrowth ? { title: { text: "−αᵢ [1/m]" } } : undefined,
-            line: { color: "#1a1f2e", width: 1 },
-          },
-          name: "Selected",
-          hovertemplate:
-            "x=%{x:.1f} mm<br>f=%{y:.1f} kHz<extra></extra>",
-        },
-      ]}
+      data={[clickSurface, selectedTrace]}
       layout={{
         width: undefined,
         height: 420,
@@ -67,13 +101,7 @@ export default function LstPointPlot({ xMinMm, xMaxMm, points, results, onAddPoi
       }}
       style={{ width: "100%" }}
       useResizeHandler
-      onClick={(ev) => {
-        const pt = ev.points?.[0];
-        if (!pt || typeof pt.x !== "number" || typeof pt.y !== "number") return;
-        const x_mm = Math.min(xMaxMm, Math.max(xMinMm, pt.x));
-        const f_khz = Math.min(F_MAX_KHZ, Math.max(F_MIN_KHZ, pt.y));
-        onAddPoint(x_mm / 1e3, f_khz);
-      }}
+      onClick={handleClick}
     />
   );
 }
